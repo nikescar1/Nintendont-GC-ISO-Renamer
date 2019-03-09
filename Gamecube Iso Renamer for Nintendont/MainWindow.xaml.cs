@@ -25,7 +25,8 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
         public MainWindow()
         {
             InitializeComponent();
-
+            //statusTextBlock.Text = " \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf ";
+            //scrollViewer.ScrollToBottom();
             finishedTextBlock.Visibility = Visibility.Hidden;
         }
 
@@ -70,22 +71,43 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
         public void Rename(string path)
         {
             DirectoryInfo dirInfo = new DirectoryInfo(path);
+            DirectoryInfo[] subDirectories = dirInfo.GetDirectories();
+            bool isDisc2 = false;
 
             FileInfo[] info = dirInfo.GetFiles("*.iso*");
             foreach (FileInfo f in info)
             {
                 string curDir = System.IO.Path.GetDirectoryName(f.FullName);
-                statusText += System.IO.Path.GetFileName(f.FullName) + " renamed to game.iso \n";
+                if (curDir.Contains("Disc 2"))
+                {
+                    isDisc2 = true;
+                    string disc1Dir = curDir.Replace("Disc 2", "Disc 1");
+                    File.Move(f.FullName, System.IO.Path.Combine(disc1Dir, "disc2.iso"));
+                    Directory.Delete(curDir);
+                    string disc1ShortenedDir = disc1Dir.Replace(" (Disc 1)", "");
+                    Directory.Move(disc1Dir, disc1ShortenedDir);
+                    statusText += System.IO.Path.GetFileName(f.FullName) + " moved and renamed to disc2.iso \n";
+                }
+                else
+                {
+                    if (!f.Name.Equals("game.iso") && !f.Name.Equals("disc2.iso"))
+                    {
+                        File.Move(f.FullName, System.IO.Path.Combine(curDir, "game.iso"));
+                        statusText += System.IO.Path.GetFileName(f.FullName) + " renamed to game.iso \n";
+                    }
+                }
+
                 statusTextBlock.Text = statusText;
-                //Console.WriteLine(curDir);
-                File.Move(f.FullName, System.IO.Path.Combine(curDir, "game.iso"));
+                scrollViewer.ScrollToBottom();
                 fileCount--;
             }
 
-            DirectoryInfo[] subDirectories = dirInfo.GetDirectories();
-            foreach (DirectoryInfo directory in subDirectories)
+            if (!isDisc2)
             {
-                Rename(directory.FullName);
+                foreach (DirectoryInfo directory in subDirectories)
+                {
+                    Rename(directory.FullName);
+                }
             }
 
             if (fileCount == 0)
