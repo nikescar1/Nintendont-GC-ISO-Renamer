@@ -5,8 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Gamecube_Iso_Renamer_for_Nintendont"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Nintendont GC ISO Renamer" Height="450" Width="800">
     <Grid>
-        
+        <TextBox Name="folderPathTextBox" Height="20" Margin="10,10,112,0" TextWrapping="Wrap" Text="Pick an ISO folder" VerticalAlignment="Top"/>
+        <Button Content="Pick Iso Folder" Margin="0,10,7,0" VerticalAlignment="Top" Height="20" Click="OpenFolderDialog" HorizontalAlignment="Right" Width="100"/>
+        <Button Content="Rename" Margin="0,35,7,0" VerticalAlignment="Top" Click="RenameClicked" HorizontalAlignment="Right" Width="100"/>
+        <TextBlock Name="statusTextBlock" Margin="10,35,112,10" TextWrapping="Wrap" Text="" Foreground="Black" Background="LightGray"/>
+        <TextBlock Name="finishedTextBlock" HorizontalAlignment="Right" Margin="0,60,10,10" TextWrapping="Wrap" Text="FINISHED" Width="97" Background="LawnGreen" TextAlignment="Center"/>
     </Grid>
 </Window>
