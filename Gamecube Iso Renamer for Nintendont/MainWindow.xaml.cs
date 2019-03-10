@@ -20,6 +20,7 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
     public partial class MainWindow : Window
     {
         private string statusText;
+        private int currentFileCount;
         private int fileCount;
 
         public MainWindow()
@@ -27,10 +28,10 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
             InitializeComponent();
             //statusTextBlock.Text = " \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf  \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n sdfjsdf ";
             //scrollViewer.ScrollToBottom();
-            finishedTextBlock.Visibility = Visibility.Hidden;
+            //finishedTextBlock.Visibility = Visibility.Hidden;
         }
 
-        private void OpenFolderDialog(object sender, RoutedEventArgs e)
+        private void OpenFolderDialog(object sender, RoutedEventArgs re)
         {
             using (var dialog = new FolderBrowserDialog())
             {
@@ -42,12 +43,18 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
             }
         }
 
-        private void RenameClicked(object sender, RoutedEventArgs e)
+        private void RenameClicked(object sender, RoutedEventArgs re)
         {
             statusText = "";
             fileCount = 0;
-            finishedTextBlock.Visibility = Visibility.Hidden;
+            progressBar.Value = 0;
             GetFileCount(folderPathTextBox.Text);
+            currentFileCount = fileCount;
+
+           // var renamer = new CoroutineOnEnumerable();
+            //renamer.Progressed += (s, e) => progressBar.Value = renamer.Progress;
+            //renamer.Start(Rename(folderPathTextBox.Text));
+
             Rename(folderPathTextBox.Text);
         }
 
@@ -64,7 +71,7 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
             DirectoryInfo[] subDirectories = dirInfo.GetDirectories();
             foreach (DirectoryInfo directory in subDirectories)
             {
-                Rename(directory.FullName);
+                GetFileCount(directory.FullName);
             }
         }
 
@@ -86,21 +93,36 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
                     Directory.Delete(curDir);
                     string disc1ShortenedDir = disc1Dir.Replace(" (Disc 1)", "");
                     Directory.Move(disc1Dir, disc1ShortenedDir);
-                    statusText += System.IO.Path.GetFileName(f.FullName) + " moved and renamed to disc2.iso \n";
+                    Run run = new Run(System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(f.FullName)) + " Disc 2 moved and renamed to disc2.iso \n");
+                    run.Foreground = Brushes.DarkOliveGreen;
+                    statusTextBlock.Inlines.Add(run);
+                    //statusText += System.IO.Path.GetFileName(f.FullName) + " moved and renamed to disc2.iso \n";
                 }
                 else
                 {
                     if (!f.Name.Equals("game.iso") && !f.Name.Equals("disc2.iso"))
                     {
                         File.Move(f.FullName, System.IO.Path.Combine(curDir, "game.iso"));
-                        statusText += System.IO.Path.GetFileName(f.FullName) + " renamed to game.iso \n";
+                        Run run = new Run(System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(f.FullName)) + " Disc 1 renamed to game.iso \n");
+                        run.Foreground = Brushes.DarkGreen;
+                        statusTextBlock.Inlines.Add(run);
+                        //statusText += System.IO.Path.GetFileName(f.FullName) + " renamed to game.iso \n";
+                    }
+                    else
+                    {
+                        Run run = new Run(System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(f.FullName)) + " skipped because it already matches naming convention \n");
+                        run.Foreground = Brushes.DarkOrange;
+                        statusTextBlock.Inlines.Add(run);
+                        //statusText += System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(f.FullName)) + " skipped because it already matches naming convention \n";
                     }
                 }
 
-                statusTextBlock.Text = statusText;
+                //statusTextBlock.Text = statusText;
                 scrollViewer.ScrollToBottom();
-                fileCount--;
+                currentFileCount--;
             }
+
+            //yield return (double)currentFileCount / (double)fileCount;
 
             if (!isDisc2)
             {
@@ -109,11 +131,12 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
                     Rename(directory.FullName);
                 }
             }
-
-            if (fileCount == 0)
+            /*
+            if (currentFileCount == 0)
             {
                 finishedTextBlock.Visibility = Visibility.Visible;
             }
+            */
         }
     }
 }
