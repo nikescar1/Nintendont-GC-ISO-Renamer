@@ -84,13 +84,22 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
             FileInfo[] info = dirInfo.GetFiles("*.iso*", SearchOption.AllDirectories);
             foreach (FileInfo f in info)
             {
-                string curDir = System.IO.Path.GetDirectoryName(f.FullName);
-                if (curDir.Contains("Disc 2"))
+                DirectoryInfo currentDirInfo = new DirectoryInfo(f.FullName);
+                string currentDirName = System.IO.Path.GetDirectoryName(f.FullName);
+
+                //bool needToCreateGameFolder = false;
+                //if (String.Compare(currentDirInfo.FullName, dirInfo.FullName, StringComparison.OrdinalIgnoreCase) == 0)
+                //{
+
+                //    needToCreateGameFolder = true;
+                //}
+
+                if (currentDirName.Contains("Disc 2"))
                 {
                     isDisc2 = true;
-                    string disc1Dir = curDir.Replace("Disc 2", "Disc 1");
+                    string disc1Dir = currentDirName.Replace("Disc 2", "Disc 1");
                     File.Move(f.FullName, System.IO.Path.Combine(disc1Dir, "disc2.iso"));
-                    Directory.Delete(curDir);
+                    Directory.Delete(currentDirName);
                     string disc1ShortenedDir = disc1Dir.Replace(" (Disc 1)", "");
                     Directory.Move(disc1Dir, disc1ShortenedDir);
                     Run run = new Run(f.Name + " Disc 2 moved and renamed to disc2.iso \n");
@@ -103,8 +112,8 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
                     Console.WriteLine($"{dirInfo.Name} {f.Directory.Name}");
                     if (f.Directory.Name.Equals(dirInfo.Name))
                     {
-                        DirectoryInfo newDir = Directory.CreateDirectory(System.IO.Path.Combine(curDir, f.Name.Substring(0, f.Name.Length - 4)));
-                        curDir = newDir.FullName;
+                        DirectoryInfo newDir = Directory.CreateDirectory(System.IO.Path.Combine(currentDirName, f.Name.Substring(0, f.Name.Length - 4)));
+                        currentDirName = newDir.FullName;
 
                         Run run = new Run(f.Name.Substring(0, f.Name.Length - 4) + " Directory Created \n");
                         run.Foreground = Brushes.DarkSeaGreen;
@@ -113,7 +122,7 @@ namespace Gamecube_Iso_Renamer_for_Nintendont
 
                     if (!f.Name.Equals("game.iso") && !f.Name.Equals("disc2.iso"))
                     {
-                        File.Move(f.FullName, System.IO.Path.Combine(curDir, "game.iso"));
+                        File.Move(f.FullName, System.IO.Path.Combine(currentDirName, "game.iso"));
                         Run run = new Run(f.Name + " Disc 1 renamed to game.iso \n");
                         run.Foreground = Brushes.DarkGreen;
                         statusTextBlock.Inlines.Add(run);
